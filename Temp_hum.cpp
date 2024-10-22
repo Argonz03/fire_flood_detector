@@ -1,7 +1,7 @@
 #include "DigitalSensors.h"
 #include <Arduino.h>
 
-Temp_Hum::Temp_Hum(int pin) : dht22(pin){}
+Temp_Hum::Temp_Hum(int pin) : dht22(pin ){}
 
   
 
