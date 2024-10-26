@@ -3,34 +3,8 @@
 #include "ADCManager.h" 
 #include "LoRaWan_APP.h"
 #include <ArduinoJson.h>
+#include "config.h"
 
-//define pin data
-#define pinDHT22 45 
-#define pinSDA 34
-#define pinSCL 33
-#define pinWater 46
-
-#define RF_FREQUENCY 915000000 // Hz
-
-#define TX_OUTPUT_POWER 5        // dBm
-
-#define LORA_BANDWIDTH 0         // [0: 125 kHz,
-                                                              //  1: 250 kHz,
-                                                              //  2: 500 kHz,
-                                                              //  3: Reserved]
-#define LORA_SPREADING_FACTOR 7         // [SF7..SF12]
-#define LORA_CODINGRATE 1         // [1: 4/5,
-                                                              //  2: 4/6,
-                                                              //  3: 4/7,
-                                                              //  4: 4/8]
-#define LORA_PREAMBLE_LENGTH 8         // Same for Tx and Rx
-#define LORA_SYMBOL_TIMEOUT 0         // Symbols
-#define LORA_FIX_LENGTH_PAYLOAD_ON false
-#define LORA_IQ_INVERSION_ON false
-
-
-#define RX_TIMEOUT_VALUE 1000
-#define BUFFER_SIZE 256 // Define the payload size here
 
 char jsonBuffer[BUFFER_SIZE];
 
@@ -75,21 +49,21 @@ void setup() {
                      LORA_SPREADING_FACTOR, LORA_CODINGRATE,
                      LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
                      true, 0, 0, LORA_IQ_INVERSION_ON, 3000 ); 
-
-  
+ 
 }
 
 void loop() {
 
   // Hardcoded test data
-  float temperature = 24.5;
-  float humidity = 60.0;
-  uint16_t soilMoisture = 350;
-  uint16_t mq2Reading = 200;
-  bool waterDetected = true;
-  float flameSensor = 100.0;
-  float objectTemp = 25.3;
-  float ambientTemp = 22.8;
+
+  uint16_t soilMoisture = ADC.soilReading();
+  uint16_t mq2Reading = ADC.gasReading();
+  uint16_t flameSensor = ADC.flameReading();
+  bool waterDetected = WD.isWaterDetected();
+  double objectTemp = IRT.objectTemp();
+  double ambientTemp = IRT.ambientTemp();
+  float temperature = TH.temperature();
+  float humidity = TH.humidity();
 
   ADC.readAllSensors();
 
@@ -117,15 +91,13 @@ void loop() {
   }
 
 
-
-
-  delay(2000); 
-
   Radio.IrqProcess( );
 
 
+  delay(30000); 
 
   
+
 }
 
 

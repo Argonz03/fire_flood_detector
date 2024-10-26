@@ -10,6 +10,9 @@ class IRTemp {
     IRTemp();
     void begin();
     void readIRTemp();
+    double objectTemp();
+    double ambientTemp();
+
 
 
   private:
@@ -37,8 +40,9 @@ class Temp_Hum {
 
   public:
     Temp_Hum(int pin);
-
     void takeReading();
+    float temperature();
+    float humidity();
 
 
   private:

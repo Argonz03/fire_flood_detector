@@ -14,12 +14,11 @@ void ADCManager::begin(){
 
 }
 
-void ADCManager::readAllSensors(){
-    if (ads.checkADS1115())
-    {
+void ADCManager::readAllSensors(){//debugging function
 
-        
-        int16_t adc0, adc1, adc2, adc3;
+    if (ads.checkADS1115())
+    {        
+        uint16_t adc0, adc1, adc2, adc3;
         adc0 = ads.readVoltage(0);
         Serial.print("Soil Sensor: ");
         Serial.print(adc0);
@@ -39,7 +38,26 @@ void ADCManager::readAllSensors(){
     {
         Serial.println("ADS1115 Disconnected!");
     }
-
     
 }
 
+
+uint16_t ADCManager::flameReading(){
+  uint16_t reading = ads.readVoltage(1);
+  return reading;
+
+}
+
+uint16_t ADCManager::gasReading(){
+  uint16_t reading = ads.readVoltage(2);
+  return reading;
+
+  
+}
+
+uint16_t ADCManager::soilReading(){
+  uint16_t reading = ads.readVoltage(0);
+  return reading;
+
+  
+}

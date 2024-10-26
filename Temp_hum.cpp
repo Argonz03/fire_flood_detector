@@ -6,7 +6,7 @@ Temp_Hum::Temp_Hum(int pin) : dht22(pin ){}
   
 
 
-void Temp_Hum::takeReading(){
+void Temp_Hum::takeReading(){//debugging function
 
   float t = dht22.getTemperature(false);
   float h = dht22.getHumidity();
@@ -24,4 +24,15 @@ void Temp_Hum::takeReading(){
 
 
   
+}
+
+float Temp_Hum::temperature(){
+  return dht22.getTemperature(false);
+
+}
+
+
+float Temp_Hum::humidity(){
+  return dht22.getHumidity();
+
 }

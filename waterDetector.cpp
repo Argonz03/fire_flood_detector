@@ -9,7 +9,7 @@ WaterDetector::WaterDetector(int pin){
 
 }
 
-void WaterDetector::takeReading(){
+void WaterDetector::takeReading(){//debugging function
   int waterState;
 
   waterState = digitalRead(pinWater);
