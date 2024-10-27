@@ -30,7 +30,7 @@ StaticJsonDocument<BUFFER_SIZE> jsonDoc;
 
 void setup() {
 
-  Serial.begin(115200); //1bit=10µs
+  Serial.begin(115200);
 
   Wire.begin(34, 33);
 
@@ -49,12 +49,16 @@ void setup() {
                      LORA_SPREADING_FACTOR, LORA_CODINGRATE,
                      LORA_PREAMBLE_LENGTH, LORA_FIX_LENGTH_PAYLOAD_ON,
                      true, 0, 0, LORA_IQ_INVERSION_ON, 3000 ); 
+
+  esp_sleep_enable_timer_wakeup(5 * 60 * 1000000);//Minutes * seconds * microseconds
+
+  //delay(1000 * 60 * 2); //2 minute delay to allow for gas sensor to warm up
  
 }
 
 void loop() {
 
-  // Hardcoded test data
+
 
   uint16_t soilMoisture = ADC.soilReading();
   uint16_t mq2Reading = ADC.gasReading();
@@ -65,38 +69,33 @@ void loop() {
   float temperature = TH.temperature();
   float humidity = TH.humidity();
 
-  ADC.readAllSensors();
+  //ADC.readAllSensors();
+  //IRT.readIRTemp();
+  //WD.takeReading();
+  //TH.takeReading();
 
-  IRT.readIRTemp();
-
-  WD.takeReading();
-
-  TH.takeReading();
-
-  jsonDoc["temperature"] = temperature;
-  jsonDoc["humidity"] = humidity;
-  jsonDoc["soil_moisture"] = soilMoisture;
-  jsonDoc["mq2"] = mq2Reading;
-  jsonDoc["water_detected"] = waterDetected;
-  jsonDoc["Flame Sensor"] = flameSensor;
-  jsonDoc["MLX Object Temp"] = objectTemp;
-  jsonDoc["MLX Ambient Temp"] = ambientTemp;
-
-  serializeJson(jsonDoc, jsonBuffer);
+  
 
   if(lora_idle == true){
+
+    jsonDoc["temperature"] = temperature;
+    jsonDoc["humidity"] = humidity;
+    jsonDoc["soil_moisture"] = soilMoisture;
+    jsonDoc["mq2"] = mq2Reading;
+    jsonDoc["water_detected"] = waterDetected;
+    jsonDoc["Flame Sensor"] = flameSensor;
+    jsonDoc["MLX Object Temp"] = objectTemp;
+    jsonDoc["MLX Ambient Temp"] = ambientTemp;
+
+    serializeJson(jsonDoc, jsonBuffer);
+
+    Serial.println(jsonBuffer);
     Radio.Send((uint8_t *)jsonBuffer, strlen(jsonBuffer));
     lora_idle = false;
 
   }
 
-
   Radio.IrqProcess( );
-
-
-  delay(30000); 
-
-  
 
 }
 
@@ -105,6 +104,7 @@ void OnTxDone( void )
 {
 	Serial.println("TX done......");
 	lora_idle = true;
+  esp_deep_sleep_start();
 }
 
 void OnTxTimeout( void )
@@ -112,4 +112,5 @@ void OnTxTimeout( void )
     Radio.Sleep( );
     Serial.println("TX Timeout......");
     lora_idle = true;
+    esp_deep_sleep_start();
 }
