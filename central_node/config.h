@@ -23,6 +23,8 @@
 #define RX_TIMEOUT_VALUE                            1000
 #define BUFFER_SIZE                                 256 // Define the payload size here
 
-
+// Add definitions for HELTEC_BOARD and SLOW_CLK_TYPE
+#define HELTEC_BOARD                                true // or an appropriate value for your board
+#define SLOW_CLK_TYPE                               false // Adjust based on your clock configuration
 
 #endif
