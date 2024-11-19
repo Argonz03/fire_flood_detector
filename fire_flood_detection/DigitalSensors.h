@@ -2,7 +2,7 @@
 #define DIGITALSENSORS_H
 
 #include <Adafruit_MLX90614.h>
-#include <DHT22.h>
+#include <DHT.h>
 
 class IRTemp {
 
@@ -46,7 +46,7 @@ class Temp_Hum {
 
 
   private:
-    DHT22 dht22;
+    DHT dht22;
 
 };
 
