@@ -24,5 +24,9 @@
 #define BUFFER_SIZE                                 256 // Define the payload size here
 
 
+#define BLYNK_TEMPLATE_ID "TMPL2i17Vzrdy"
+#define BLYNK_TEMPLATE_NAME "Guardly"
+#define BLYNK_AUTH_TOKEN "coXMTWUMNy5v14WnfgetbHV8hkgcEAHb"
+
 
 #endif

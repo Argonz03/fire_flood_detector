@@ -1,10 +1,16 @@
+#include "config.h"
 #include "LoRaWan_APP.h"
 #include "Arduino.h"
 #include <ArduinoJson.h>
-#include "config.h"
+#include <secret.h>
+#include <BlynkSimpleEsp32.h>
+#include <datalogger.h>
+#include <AlertSystem.h>
 
+DataLogger dataLogger;
+AlertSystem alertSystem;
 
-
+bool notificationFlag = false;
 
 char txpacket[BUFFER_SIZE];
 char rxpacket[BUFFER_SIZE];
@@ -19,6 +25,7 @@ uint16_t flameSensor;
 bool waterDetected;
 double objectTemp;
 double ambientTemp;
+uint16_t batteryReading;
 
 static RadioEvents_t RadioEvents;
 
@@ -30,6 +37,10 @@ void setup() {
     Serial.begin(115200);
     Mcu.begin(HELTEC_BOARD,SLOW_CLK_TPYE);
     
+    Blynk.begin(BLYNK_AUTH_TOKEN, WIFI_SSID, WIFI_PASS);
+
+    
+    dataLogger.begin();
 
     rssi=0;
   
@@ -54,6 +65,25 @@ void loop(){
     Radio.Rx(0);
   }
   Radio.IrqProcess( );
+
+  if (notificationFlag){
+    if (alertSystem.getFloodAlert() == 1){
+      Blynk.logEvent("flood_risk_elevated");
+    }
+    if (alertSystem.getFloodAlert() == 2){
+      Blynk.logEvent("flood_danger");
+    }
+    if (alertSystem.getFireAlert() == 1){
+      Blynk.logEvent("fire_risk_elevated");
+    }
+    if (alertSystem.getFireAlert() == 2){
+      Blynk.logEvent("fire_danger");
+    }
+    
+    notificationFlag = false;
+  }
+
+  Blynk.run();
 
 }
 
@@ -85,6 +115,11 @@ void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr ){
     flameSensor = jsonDoc["Flame Sensor"];
     objectTemp = jsonDoc["MLX Object Temp"];
     ambientTemp = jsonDoc["MLX Ambient Temp"];
+    batteryReading = jsonDoc["Battery Percentage"];
+
+    alertSystem.checkAlerts(temperature, objectTemp, soilMoisture, mq2Reading, flameSensor, waterDetected);
+
+    if(alertSystem.getAlertStatus() > 0){notificationFlag = true;}
 
     // Print the received sensor data
     Serial.println("Received Sensor Data:");
@@ -96,6 +131,39 @@ void OnRxDone( uint8_t *payload, uint16_t size, int16_t rssi, int8_t snr ){
     Serial.print("Water Detected: "); Serial.println(waterDetected ? "Yes" : "No");
     Serial.print("MLX Object Temp: "); Serial.println(objectTemp);
     Serial.print("MLX Ambient Temp: "); Serial.println(ambientTemp);
+    Serial.print("Battery percentage "); Serial.println(batteryReading);
+
+    Serial.println("Sending sensor data to Blynk...");
+    Blynk.virtualWrite(V0, temperature);
+    Blynk.virtualWrite(V1, humidity);
+    Blynk.virtualWrite(V2, soilMoisture);
+    Blynk.virtualWrite(V3, mq2Reading);
+    Blynk.virtualWrite(V4, flameSensor);
+    Blynk.virtualWrite(V5, waterDetected);
+    Blynk.virtualWrite(V6, objectTemp);
+    Blynk.virtualWrite(V7, ambientTemp);
+    Blynk.virtualWrite(V9, batteryReading);
+    Blynk.virtualWrite(V8, alertSystem.getAlertStatus());
+    Blynk.virtualWrite(V10, alertSystem.getFireAlert());
+    Blynk.virtualWrite(V11, alertSystem.getFloodAlert());
+
+    Serial.println("Sending sensor data to Firebase...");
+    dataLogger.logData(
+        temperature,
+        humidity,
+        soilMoisture,
+        mq2Reading,
+        flameSensor,
+        waterDetected,
+        objectTemp,
+        ambientTemp,
+        rssi,
+        batteryReading);
+    
+    
+  
+
+    Blynk.run();
 
     lora_idle = true;
 }

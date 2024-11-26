@@ -6,6 +6,8 @@
 #define pinSDA 34
 #define pinSCL 33
 #define pinWater 46
+#define pinBattery 1
+#define transistorPin 7
 
 #define RF_FREQUENCY 915000000 // Hz
 
